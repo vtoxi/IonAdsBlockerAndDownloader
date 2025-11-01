@@ -375,6 +375,59 @@ npm run publish:edge       # Edge Add-ons only
 
 ---
 
+## 🔄 GitHub Actions CI/CD
+
+**NEW:** Automated build and deployment via GitHub Actions!
+
+### Features
+- ✅ **Automated builds** on every push/PR
+- ✅ **Auto-publish** to all stores on version tags
+- ✅ **Pre-validation** before deployment
+- ✅ **Parallel store uploads** (Chrome, Firefox, Edge)
+- ✅ **Secure secrets** management
+
+### Quick Setup
+
+**1. Add GitHub Secrets (Automated)**
+```bash
+# Option 1: Using GitHub CLI (2 minutes)
+gh auth login
+chmod +x scripts/setup-github-secrets.sh
+./scripts/setup-github-secrets.sh
+
+# Option 2: Using GitHub API
+export GITHUB_TOKEN="your_token"
+chmod +x scripts/setup-github-secrets-api.sh
+./scripts/setup-github-secrets-api.sh
+```
+
+**2. Enable GitHub Actions**
+- Go to: Settings → Actions → General
+- Enable "Allow all actions and reusable workflows"
+- Set "Workflow permissions" to "Read and write permissions"
+
+**3. Trigger Deployment**
+```bash
+# Automatic deployment on tag push
+npm run version:bump
+git push origin main --tags
+
+# Or manually trigger workflow
+gh workflow run build-and-publish.yml
+```
+
+### Workflows
+- **`build-and-publish.yml`** - Auto-publish on tag push
+- **`validate-pr.yml`** - Validate pull requests
+
+**Full Documentation:**
+- [GITHUB_ACTIONS_GUIDE.md](.github/GITHUB_ACTIONS_GUIDE.md) - Complete guide
+- [SECRETS_SETUP.md](.github/SECRETS_SETUP.md) - Secrets configuration
+- [SECRETS_AUTOMATION_README.md](scripts/SECRETS_AUTOMATION_README.md) - Automated secrets setup
+- [CICD_SUMMARY.md](CICD_SUMMARY.md) - CI/CD overview
+
+---
+
 ## 📄 License
 
 MIT License - See [LICENSE](LICENSE) file for details

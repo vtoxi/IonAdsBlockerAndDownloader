@@ -6,6 +6,45 @@ To enable automated building and publishing to all web stores, you need to add t
 
 ---
 
+## 🚀 Quick Setup (Automated)
+
+**NEW:** We provide automated scripts to add all secrets at once!
+
+### Using GitHub CLI (Recommended - 2 minutes)
+```bash
+# Install GitHub CLI (if not already installed)
+brew install gh  # macOS
+
+# Authenticate
+gh auth login
+
+# Run automation script
+chmod +x scripts/setup-github-secrets.sh
+./scripts/setup-github-secrets.sh
+```
+
+### Using GitHub API (Alternative)
+```bash
+# Install dependencies
+brew install jq
+pip3 install PyNaCl
+
+# Run API script
+chmod +x scripts/setup-github-secrets-api.sh
+export GITHUB_TOKEN="your_personal_access_token"
+./scripts/setup-github-secrets-api.sh
+```
+
+**📚 Full Documentation:** See `scripts/SECRETS_AUTOMATION_README.md` for detailed instructions.
+
+---
+
+## 📖 Manual Setup (Traditional Method)
+
+If you prefer to add secrets manually through the GitHub UI, follow the instructions below.
+
+---
+
 ## 📍 Where to Add Secrets
 
 1. Go to your repository: https://github.com/vtoxi/IonAdsBlockerAndDownloader
