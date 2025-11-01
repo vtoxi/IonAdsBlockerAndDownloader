@@ -423,3 +423,8 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = YouTubeDownloader;
 }
 
+// Also expose globally for dynamic loading
+if (typeof window !== 'undefined') {
+  window.YouTubeDownloader = YouTubeDownloader;
+}
+

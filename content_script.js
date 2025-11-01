@@ -80,8 +80,20 @@ function loadEnhancedYouTubeAdBlocker() {
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('core/enhancedYouTubeAdBlocker.js');
   script.onload = () => {
-    adBlocker = new EnhancedYouTubeAdBlocker();
-    console.log('[IonBlock] Enhanced YouTube Ad Blocker loaded');
+    // Check if class is available
+    if (typeof window.EnhancedYouTubeAdBlocker !== 'undefined') {
+      adBlocker = new window.EnhancedYouTubeAdBlocker();
+      console.log('[IonBlock] Enhanced YouTube Ad Blocker loaded');
+    } else {
+      console.error('[IonBlock] EnhancedYouTubeAdBlocker class not found');
+      // Fallback to regular ad blocker
+      adBlocker = new AdBlocker();
+    }
+  };
+  script.onerror = () => {
+    console.error('[IonBlock] Failed to load enhanced YouTube ad blocker');
+    // Fallback to regular ad blocker
+    adBlocker = new AdBlocker();
   };
   (document.head || document.documentElement).appendChild(script);
 }
@@ -121,8 +133,16 @@ function initYouTubeDownloader() {
   const script = document.createElement('script');
   script.src = chrome.runtime.getURL('core/youtubeDownloader.js');
   script.onload = () => {
-    youtubeDownloader = new YouTubeDownloader();
-    console.log('[IonBlock] YouTube downloader initialized');
+    // Check if class is available
+    if (typeof window.YouTubeDownloader !== 'undefined') {
+      youtubeDownloader = new window.YouTubeDownloader();
+      console.log('[IonBlock] YouTube downloader initialized');
+    } else {
+      console.error('[IonBlock] YouTubeDownloader class not found');
+    }
+  };
+  script.onerror = () => {
+    console.error('[IonBlock] Failed to load YouTube downloader');
   };
   (document.head || document.documentElement).appendChild(script);
 }

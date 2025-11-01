@@ -399,3 +399,8 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = EnhancedYouTubeAdBlocker;
 }
 
+// Also expose globally for dynamic loading
+if (typeof window !== 'undefined') {
+  window.EnhancedYouTubeAdBlocker = EnhancedYouTubeAdBlocker;
+}
+
