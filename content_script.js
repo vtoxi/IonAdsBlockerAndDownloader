@@ -50,14 +50,40 @@ async function init() {
  * Initialize ad blocker
  */
 function initAdBlocker() {
+  // Check if YouTube
+  const isYouTube = window.location.hostname.includes('youtube.com');
+  
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      adBlocker = new AdBlocker();
+      if (isYouTube) {
+        // Use enhanced YouTube ad blocker
+        loadEnhancedYouTubeAdBlocker();
+      } else {
+        adBlocker = new AdBlocker();
+      }
     });
   } else {
-    adBlocker = new AdBlocker();
+    if (isYouTube) {
+      // Use enhanced YouTube ad blocker
+      loadEnhancedYouTubeAdBlocker();
+    } else {
+      adBlocker = new AdBlocker();
+    }
   }
+}
+
+/**
+ * Load enhanced YouTube ad blocker
+ */
+function loadEnhancedYouTubeAdBlocker() {
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('core/enhancedYouTubeAdBlocker.js');
+  script.onload = () => {
+    adBlocker = new EnhancedYouTubeAdBlocker();
+    console.log('[IonBlock] Enhanced YouTube Ad Blocker loaded');
+  };
+  (document.head || document.documentElement).appendChild(script);
 }
 
 /**

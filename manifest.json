@@ -61,7 +61,12 @@
   
   "web_accessible_resources": [
     {
-      "resources": ["injected/captureScript.js", "ui/floatingButton.css", "core/youtubeDownloader.js"],
+      "resources": [
+        "injected/captureScript.js", 
+        "ui/floatingButton.css", 
+        "core/youtubeDownloader.js",
+        "core/enhancedYouTubeAdBlocker.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
