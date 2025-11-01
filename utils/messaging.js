@@ -144,8 +144,6 @@ const MessageActions = {
   BLOB_DETECTED: 'blob_detected'
 };
 
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { MessagingUtil, MessageActions };
-}
+// Export for ES6 modules
+export { MessagingUtil, MessageActions };
 

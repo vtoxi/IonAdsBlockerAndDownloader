@@ -3,8 +3,9 @@
  * Handles downloads, settings management, and coordinates extension features
  */
 
-// Import utilities (note: imports work in service workers with type: "module")
-importScripts('utils/storage.js', 'utils/messaging.js');
+// Import utilities (ES6 modules)
+import { StorageUtil } from './utils/storage.js';
+import { MessagingUtil, MessageActions } from './utils/messaging.js';
 
 // Browser API compatibility
 const api = typeof browser !== 'undefined' ? browser : chrome;
