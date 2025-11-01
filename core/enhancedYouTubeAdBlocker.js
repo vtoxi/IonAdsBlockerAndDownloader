@@ -45,6 +45,9 @@ class EnhancedYouTubeAdBlocker {
   init() {
     console.log('[IonBlock] Enhanced YouTube Ad Blocker initialized');
     
+    // FIRST: Disable YouTube's anti-adblock detection
+    this.disableAntiAdblock();
+    
     // Immediate cleanup
     this.removeAds();
     
@@ -65,6 +68,79 @@ class EnhancedYouTubeAdBlocker {
     
     // Hook into YouTube's player
     this.hookYouTubePlayer();
+  }
+  
+  /**
+   * Disable YouTube's anti-adblock detection
+   */
+  disableAntiAdblock() {
+    // Block the anti-adblock enforcement popup
+    const blockAntiAdblockPopup = () => {
+      // Remove enforcement dialog
+      const dialog = document.querySelector('tp-yt-paper-dialog:has(#feedback)');
+      if (dialog) {
+        dialog.remove();
+        console.log('[IonBlock] Blocked anti-adblock popup');
+      }
+      
+      // Remove enforcement message
+      const enforcement = document.querySelector('ytd-enforcement-message-view-model');
+      if (enforcement) {
+        enforcement.remove();
+        console.log('[IonBlock] Blocked enforcement message');
+      }
+    };
+    
+    // Run immediately and watch for future popups
+    blockAntiAdblockPopup();
+    setInterval(blockAntiAdblockPopup, 1000);
+    
+    // Prevent YouTube from detecting ad blockers via fetch/XHR
+    const originalFetch = window.fetch;
+    window.fetch = function(...args) {
+      const url = args[0];
+      if (typeof url === 'string' && url.includes('/get_midroll_info')) {
+        // Return fake empty response for ad check endpoints
+        return Promise.resolve(new Response('{}', {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        }));
+      }
+      return originalFetch.apply(this, args);
+    };
+    
+    // Override properties YouTube uses to detect ad blockers
+    try {
+      Object.defineProperty(window, 'ytInitialPlayerResponse', {
+        get: function() {
+          const response = this._ytInitialPlayerResponse || {};
+          // Remove ad-related properties
+          if (response.adPlacements) delete response.adPlacements;
+          if (response.playerAds) delete response.playerAds;
+          if (response.adSlots) delete response.adSlots;
+          return response;
+        },
+        set: function(value) {
+          this._ytInitialPlayerResponse = value;
+        },
+        configurable: true
+      });
+    } catch (e) {
+      console.warn('[IonBlock] Could not override ytInitialPlayerResponse:', e);
+    }
+    
+    // Prevent detection via timing
+    const originalSetTimeout = window.setTimeout;
+    window.setTimeout = function(callback, delay, ...args) {
+      // Block YouTube's anti-adblock timing checks
+      const stack = new Error().stack;
+      if (stack && stack.includes('adblocker')) {
+        return originalSetTimeout(() => {}, 0);
+      }
+      return originalSetTimeout(callback, delay, ...args);
+    };
+    
+    console.log('[IonBlock] Anti-adblock detection disabled');
   }
   
   /**
@@ -289,6 +365,15 @@ class EnhancedYouTubeAdBlocker {
         pointer-events: none !important;
       }
       
+      /* CRITICAL: Hide anti-adblock enforcement popup */
+      tp-yt-paper-dialog:has(#feedback),
+      ytd-enforcement-message-view-model,
+      ytd-popup-container:has(ytd-enforcement-message-view-model) {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+      }
+      
       /* Hide ad containers */
       [class*="ad-"], [id*="ad-"] {
         display: none !important;
@@ -314,7 +399,8 @@ class EnhancedYouTubeAdBlocker {
       }
     `;
     
-    (document.head || document.documentElement).appendChild(style);
+    document.head.appendChild(style);
+    console.log('[IonBlock] Ad block CSS injected');
   }
   
   /**
