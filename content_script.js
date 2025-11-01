@@ -83,20 +83,16 @@ function loadEnhancedYouTubeAdBlocker() {
     adBlocker = { enabled: true }; // Placeholder since it runs in page context
   }, { once: true });
   
-  // Inject script into page context
-  fetch(chrome.runtime.getURL('core/enhancedYouTubeAdBlocker.js'))
-    .then(response => response.text())
-    .then(scriptContent => {
-      const script = document.createElement('script');
-      script.textContent = scriptContent;
-      (document.head || document.documentElement).appendChild(script);
-      script.remove();
-    })
-    .catch(error => {
-      console.error('[IonBlock] Failed to load enhanced YouTube ad blocker:', error);
-      // Fallback to regular ad blocker in content script context
-      adBlocker = new AdBlocker();
-    });
+  // Inject script into page context using src (bypasses CSP inline restrictions)
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('core/enhancedYouTubeAdBlocker.js');
+  script.onload = () => script.remove();
+  script.onerror = () => {
+    console.error('[IonBlock] Failed to load enhanced YouTube ad blocker');
+    // Fallback to regular ad blocker in content script context
+    adBlocker = new AdBlocker();
+  };
+  (document.head || document.documentElement).appendChild(script);
 }
 
 /**
@@ -136,18 +132,14 @@ function initYouTubeDownloader() {
     youtubeDownloader = { enabled: true }; // Placeholder since it runs in page context
   }, { once: true });
   
-  // Inject script into page context
-  fetch(chrome.runtime.getURL('core/youtubeDownloader.js'))
-    .then(response => response.text())
-    .then(scriptContent => {
-      const script = document.createElement('script');
-      script.textContent = scriptContent;
-      (document.head || document.documentElement).appendChild(script);
-      script.remove();
-    })
-    .catch(error => {
-      console.error('[IonBlock] Failed to load YouTube downloader:', error);
-    });
+  // Inject script into page context using src (bypasses CSP inline restrictions)
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('core/youtubeDownloader.js');
+  script.onload = () => script.remove();
+  script.onerror = () => {
+    console.error('[IonBlock] Failed to load YouTube downloader');
+  };
+  (document.head || document.documentElement).appendChild(script);
 }
 
 /**

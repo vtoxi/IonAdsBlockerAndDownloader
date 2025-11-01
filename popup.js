@@ -247,9 +247,21 @@ async function loadDetectedMedia() {
       return;
     }
     
+    // Check if tab URL is valid for content scripts
+    const url = currentTab.url || '';
+    if (url.startsWith('chrome://') || url.startsWith('chrome-extension://') || 
+        url.startsWith('edge://') || url.startsWith('about:')) {
+      showEmptyMedia();
+      return;
+    }
+    
     // Send message to content script to get detected media
     const response = await api.tabs.sendMessage(currentTab.id, {
       action: 'get_detected_media'
+    }).catch(err => {
+      // Content script may not be injected yet on system pages
+      console.warn('[IonBlock Popup] Could not reach content script:', err.message);
+      return null;
     });
     
     if (response && response.success && response.media) {
@@ -407,8 +419,8 @@ async function handleMediaDownload(event) {
   button.disabled = true;
   
   try {
-    // Send download request to content script
-    const response = await api.tabs.sendMessage(currentTab.id, {
+    // Send download request to background script instead of content script
+    const response = await api.runtime.sendMessage({
       action: 'download_media',
       data: { url, filename, type }
     });
