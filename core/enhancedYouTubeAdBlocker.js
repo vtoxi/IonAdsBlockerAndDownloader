@@ -185,17 +185,17 @@ class EnhancedYouTubeAdBlocker {
    */
   isAdElement(element) {
     // Don't remove if it contains the main video
-    if (element.querySelector('video.html5-main-video')) {
+    if (element.querySelector && element.querySelector('video.html5-main-video')) {
       return false;
     }
     
     // Check for ad indicators
-    const className = element.className || '';
-    const id = element.id || '';
+    const className = String(element.className || '');
+    const id = String(element.id || '');
     
     // Is explicitly marked as ad
-    if (element.hasAttribute('is-ad')) return true;
-    if (element.hasAttribute('ad-id')) return true;
+    if (element.hasAttribute && element.hasAttribute('is-ad')) return true;
+    if (element.hasAttribute && element.hasAttribute('ad-id')) return true;
     if (className.includes('ad-showing')) return true;
     
     // Contains ad-related classes

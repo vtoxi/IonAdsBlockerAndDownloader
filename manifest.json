@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "IonBlock - Smart AdBlocker & Media Downloader",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Privacy-focused ad blocker for YouTube and general web with smart media downloading capabilities. No tracking, no data collection.",
   "author": "IonBlock Team",
   
