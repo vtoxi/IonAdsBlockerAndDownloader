@@ -1,0 +1,42 @@
+{
+  "name": "ionblock-extension",
+  "version": "1.0.0",
+  "description": "Privacy-focused ad blocker and media downloader browser extension",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "publish": "bash scripts/publish-all.sh",
+    "publish:chrome": "bash scripts/publish-chrome.sh",
+    "publish:firefox": "bash scripts/publish-firefox.sh",
+    "publish:edge": "bash scripts/publish-edge.sh",
+    "version:bump": "bash scripts/version-bump.sh",
+    "setup:credentials": "bash scripts/setup-credentials.sh",
+    "test": "echo 'See TESTING.md for testing instructions'",
+    "validate": "node scripts/validate.js",
+    "clean": "rm -rf build dist",
+    "dev": "echo 'Load extension in browser developer mode. See QUICKSTART.md'"
+  },
+  "keywords": [
+    "chrome-extension",
+    "firefox-addon",
+    "edge-extension",
+    "ad-blocker",
+    "media-downloader",
+    "privacy",
+    "manifest-v3"
+  ],
+  "author": "IonBlock Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ionblock/extension.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ionblock/extension/issues"
+  },
+  "homepage": "https://github.com/ionblock/extension#readme",
+  "devDependencies": {},
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
+

@@ -1,0 +1,82 @@
+{
+  "manifest_version": 3,
+  "name": "IonBlock - Smart AdBlocker & Media Downloader",
+  "version": "1.0.0",
+  "description": "Privacy-focused ad blocker for YouTube and general web with smart media downloading capabilities. No tracking, no data collection.",
+  "author": "IonBlock Team",
+  
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    },
+    "default_title": "IonBlock"
+  },
+  
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_script.js"],
+      "run_at": "document_start",
+      "all_frames": false
+    }
+  ],
+  
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "ad_rules",
+        "enabled": true,
+        "path": "rules/ad_rules.json"
+      }
+    ]
+  },
+  
+  "permissions": [
+    "declarativeNetRequest",
+    "declarativeNetRequestFeedback",
+    "storage",
+    "downloads",
+    "activeTab",
+    "scripting",
+    "webRequest"
+  ],
+  
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  
+  "web_accessible_resources": [
+    {
+      "resources": ["injected/captureScript.js", "ui/floatingButton.css"],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  },
+  
+  "homepage_url": "https://github.com/ionblock/extension",
+  
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ionblock@extension.local",
+      "strict_min_version": "109.0"
+    }
+  }
+}
+

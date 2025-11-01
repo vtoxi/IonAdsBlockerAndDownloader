@@ -1,0 +1,46 @@
+MIT License
+
+Copyright (c) 2025 IonBlock Contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+ADDITIONAL TERMS FOR MEDIA DOWNLOADING FUNCTIONALITY:
+
+The media downloading features provided by this software are intended for 
+personal, non-commercial use only. Users are solely responsible for ensuring
+their use complies with applicable copyright laws, terms of service, and 
+content licensing agreements.
+
+The software developers and contributors:
+- Do NOT endorse or encourage copyright infringement
+- Do NOT provide support for bypassing DRM or content protection systems
+- Do NOT assume liability for user actions or downloaded content
+- Do NOT guarantee compatibility with any specific website or service
+
+By using this software, you agree to:
+- Only download content you have legal rights to access
+- Respect intellectual property rights and applicable laws
+- Use the software for legitimate, lawful purposes only
+- Not hold the developers liable for your use of the software
+
+This software includes functionality to detect and refuse downloading of
+DRM-protected content as a good-faith effort to prevent misuse.
+

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>IonBlock</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <img src="icons/icon48.png" alt="IonBlock" width="32" height="32">
+        <h1>IonBlock</h1>
+      </div>
+      <div class="version">v1.0.0</div>
+    </header>
+
+    <!-- Main Toggle -->
+    <div class="main-toggle">
+      <label class="toggle-container">
+        <input type="checkbox" id="mainToggle" checked>
+        <span class="toggle-slider"></span>
+        <span class="toggle-label">Extension Enabled</span>
+      </label>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-icon">🛡️</div>
+        <div class="stat-info">
+          <div class="stat-value" id="adsBlocked">0</div>
+          <div class="stat-label">Ads Blocked</div>
+        </div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-icon">⬇️</div>
+        <div class="stat-info">
+          <div class="stat-value" id="mediaDownloaded">0</div>
+          <div class="stat-label">Media Downloaded</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature Toggles -->
+    <div class="features">
+      <div class="feature-item">
+        <div class="feature-info">
+          <div class="feature-title">Ad Blocker</div>
+          <div class="feature-desc">Block YouTube and web ads</div>
+        </div>
+        <label class="toggle-container">
+          <input type="checkbox" id="adBlockerToggle" checked>
+          <span class="toggle-slider small"></span>
+        </label>
+      </div>
+      
+      <div class="feature-item">
+        <div class="feature-info">
+          <div class="feature-title">Media Downloader</div>
+          <div class="feature-desc">Detect and download media</div>
+        </div>
+        <label class="toggle-container">
+          <input type="checkbox" id="downloaderToggle" checked>
+          <span class="toggle-slider small"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Whitelist Section -->
+    <div class="section">
+      <div class="section-header">
+        <h3>Current Site</h3>
+        <div class="domain" id="currentDomain">Loading...</div>
+      </div>
+      <button class="btn btn-secondary" id="whitelistBtn">
+        <span id="whitelistText">Add to Whitelist</span>
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <a href="#" id="privacyLink" class="footer-link">Privacy</a>
+      <span class="separator">•</span>
+      <a href="#" id="helpLink" class="footer-link">Help</a>
+      <span class="separator">•</span>
+      <a href="#" id="reportLink" class="footer-link">Report Issue</a>
+    </footer>
+
+    <!-- Copyright Notice -->
+    <div class="notice">
+      <p>⚠️ Only download content you have rights to access.</p>
+      <p>For personal, non-commercial use only.</p>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
+
