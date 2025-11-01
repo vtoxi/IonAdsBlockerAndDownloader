@@ -418,13 +418,17 @@ class YouTubeDownloader {
   }
 }
 
-// Export for use in content script
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = YouTubeDownloader;
+// Auto-instantiate when loaded
+if (typeof window !== 'undefined') {
+  window.ionblockYouTubeDownloader = new YouTubeDownloader();
+  console.log('[IonBlock] YouTube Downloader auto-initialized');
+  
+  // Signal content script that we're ready
+  window.dispatchEvent(new CustomEvent('ionblock-downloader-ready'));
 }
 
-// Also expose globally for dynamic loading
-if (typeof window !== 'undefined') {
-  window.YouTubeDownloader = YouTubeDownloader;
+// Export for use in content script (if needed)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = YouTubeDownloader;
 }
 

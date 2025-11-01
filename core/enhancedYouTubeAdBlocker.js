@@ -394,13 +394,17 @@ class EnhancedYouTubeAdBlocker {
   }
 }
 
-// Export for use in content script
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = EnhancedYouTubeAdBlocker;
+// Auto-instantiate when loaded
+if (typeof window !== 'undefined') {
+  window.ionblockYouTubeAdBlocker = new EnhancedYouTubeAdBlocker();
+  console.log('[IonBlock] Enhanced YouTube Ad Blocker auto-initialized');
+  
+  // Signal content script that we're ready
+  window.dispatchEvent(new CustomEvent('ionblock-adblocker-ready'));
 }
 
-// Also expose globally for dynamic loading
-if (typeof window !== 'undefined') {
-  window.EnhancedYouTubeAdBlocker = EnhancedYouTubeAdBlocker;
+// Export for use in content script (if needed)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = EnhancedYouTubeAdBlocker;
 }
 

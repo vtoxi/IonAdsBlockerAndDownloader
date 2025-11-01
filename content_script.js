@@ -77,25 +77,26 @@ function initAdBlocker() {
  * Load enhanced YouTube ad blocker
  */
 function loadEnhancedYouTubeAdBlocker() {
-  const script = document.createElement('script');
-  script.src = chrome.runtime.getURL('core/enhancedYouTubeAdBlocker.js');
-  script.onload = () => {
-    // Check if class is available
-    if (typeof window.EnhancedYouTubeAdBlocker !== 'undefined') {
-      adBlocker = new window.EnhancedYouTubeAdBlocker();
-      console.log('[IonBlock] Enhanced YouTube Ad Blocker loaded');
-    } else {
-      console.error('[IonBlock] EnhancedYouTubeAdBlocker class not found');
-      // Fallback to regular ad blocker
+  // Listen for ready signal from page context
+  window.addEventListener('ionblock-adblocker-ready', () => {
+    console.log('[IonBlock] Enhanced YouTube Ad Blocker initialized in page context');
+    adBlocker = { enabled: true }; // Placeholder since it runs in page context
+  }, { once: true });
+  
+  // Inject script into page context
+  fetch(chrome.runtime.getURL('core/enhancedYouTubeAdBlocker.js'))
+    .then(response => response.text())
+    .then(scriptContent => {
+      const script = document.createElement('script');
+      script.textContent = scriptContent;
+      (document.head || document.documentElement).appendChild(script);
+      script.remove();
+    })
+    .catch(error => {
+      console.error('[IonBlock] Failed to load enhanced YouTube ad blocker:', error);
+      // Fallback to regular ad blocker in content script context
       adBlocker = new AdBlocker();
-    }
-  };
-  script.onerror = () => {
-    console.error('[IonBlock] Failed to load enhanced YouTube ad blocker');
-    // Fallback to regular ad blocker
-    adBlocker = new AdBlocker();
-  };
-  (document.head || document.documentElement).appendChild(script);
+    });
 }
 
 /**
@@ -129,22 +130,24 @@ function initMediaDownloader() {
  * Initialize YouTube-specific downloader
  */
 function initYouTubeDownloader() {
-  // Load YouTube downloader script
-  const script = document.createElement('script');
-  script.src = chrome.runtime.getURL('core/youtubeDownloader.js');
-  script.onload = () => {
-    // Check if class is available
-    if (typeof window.YouTubeDownloader !== 'undefined') {
-      youtubeDownloader = new window.YouTubeDownloader();
-      console.log('[IonBlock] YouTube downloader initialized');
-    } else {
-      console.error('[IonBlock] YouTubeDownloader class not found');
-    }
-  };
-  script.onerror = () => {
-    console.error('[IonBlock] Failed to load YouTube downloader');
-  };
-  (document.head || document.documentElement).appendChild(script);
+  // Listen for ready signal from page context
+  window.addEventListener('ionblock-downloader-ready', () => {
+    console.log('[IonBlock] YouTube Downloader initialized in page context');
+    youtubeDownloader = { enabled: true }; // Placeholder since it runs in page context
+  }, { once: true });
+  
+  // Inject script into page context
+  fetch(chrome.runtime.getURL('core/youtubeDownloader.js'))
+    .then(response => response.text())
+    .then(scriptContent => {
+      const script = document.createElement('script');
+      script.textContent = scriptContent;
+      (document.head || document.documentElement).appendChild(script);
+      script.remove();
+    })
+    .catch(error => {
+      console.error('[IonBlock] Failed to load YouTube downloader:', error);
+    });
 }
 
 /**
