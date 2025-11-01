@@ -137,30 +137,54 @@ function setupMediaDetectionUI() {
 }
 
 /**
- * Show floating download button
+ * Show floating download button above media element
  */
 function showFloatingButton(mediaInfo) {
-  // Check if button already exists
-  if (document.getElementById('ionblock-download-btn')) {
+  // Find the media element
+  let targetElement = null;
+  
+  if (mediaInfo.element) {
+    targetElement = mediaInfo.element;
+  } else {
+    // Try to find video or audio element
+    targetElement = document.querySelector('video, audio');
+  }
+  
+  if (!targetElement) {
+    console.warn('[IonBlock] No media element found for button placement');
     return;
   }
+  
+  // Check if button already exists on this element
+  const existingContainer = targetElement.parentElement?.closest('.ionblock-media-container');
+  if (existingContainer) {
+    return;
+  }
+  
+  // Create wrapper container
+  const container = document.createElement('div');
+  container.className = 'ionblock-media-container';
+  
+  // Wrap the media element
+  targetElement.parentNode.insertBefore(container, targetElement);
+  container.appendChild(targetElement);
   
   // Create button
   const button = document.createElement('div');
   button.id = 'ionblock-download-btn';
   button.className = 'ionblock-floating-button';
   button.innerHTML = `
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 16L7 11L8.4 9.55L11 12.15V4H13V12.15L15.6 9.55L17 11L12 16Z" fill="currentColor"/>
       <path d="M20 18H4V20H20V18Z" fill="currentColor"/>
     </svg>
-    <span>Download</span>
+    <span>Download Media</span>
   `;
   
   // Add click handler
   button.addEventListener('click', async () => {
     button.classList.add('downloading');
-    button.innerHTML = '<span>Downloading...</span>';
+    button.innerHTML = '<span>⏳ Downloading...</span>';
     
     try {
       const allMedia = mediaDownloader.getAllMedia();
@@ -172,30 +196,41 @@ function showFloatingButton(mediaInfo) {
         
         await mediaDownloader.downloadMedia(targetMedia.url);
         
-        button.innerHTML = '<span>✓ Downloaded!</span>';
-        setTimeout(() => button.remove(), 2000);
+        button.classList.remove('downloading');
+        button.classList.add('success');
+        button.innerHTML = '<span>✅ Downloaded!</span>';
+        setTimeout(() => {
+          button.remove();
+          // Unwrap the container
+          if (container.parentNode) {
+            container.parentNode.insertBefore(targetElement, container);
+            container.remove();
+          }
+        }, 3000);
       }
     } catch (error) {
       console.error('[IonBlock] Download error:', error);
-      button.innerHTML = '<span>✗ Error</span>';
+      button.classList.remove('downloading');
       button.classList.add('error');
-      setTimeout(() => button.remove(), 2000);
+      button.innerHTML = '<span>❌ Error</span>';
+      setTimeout(() => {
+        button.remove();
+        // Unwrap the container
+        if (container.parentNode) {
+          container.parentNode.insertBefore(targetElement, container);
+          container.remove();
+        }
+      }, 3000);
     }
   });
   
   // Load CSS
   loadFloatingButtonCSS();
   
-  // Add to page
-  document.body.appendChild(button);
+  // Insert button at the top of container (before media element)
+  container.insertBefore(button, targetElement);
   
-  // Auto-hide after 10 seconds
-  setTimeout(() => {
-    if (button.parentElement && !button.classList.contains('downloading')) {
-      button.style.opacity = '0';
-      setTimeout(() => button.remove(), 300);
-    }
-  }, 10000);
+  console.log('[IonBlock] Download button added above media element');
 }
 
 /**
@@ -214,11 +249,20 @@ function loadFloatingButtonCSS() {
 }
 
 /**
- * Show YouTube download button
+ * Show YouTube download button above video player
  */
 function showYouTubeDownloadButton(data) {
-  // Check if button already exists
-  if (document.getElementById('ionblock-youtube-download-btn')) {
+  // Find YouTube video player
+  const videoElement = document.querySelector('video') || document.querySelector('#movie_player');
+  
+  if (!videoElement) {
+    console.warn('[IonBlock] No YouTube video player found');
+    return;
+  }
+  
+  // Check if button already exists on this element
+  const existingContainer = videoElement.parentElement?.closest('.ionblock-media-container');
+  if (existingContainer && existingContainer.querySelector('#ionblock-youtube-download-btn')) {
     return;
   }
   
@@ -227,47 +271,64 @@ function showYouTubeDownloadButton(data) {
     return;
   }
   
+  // Create wrapper container if it doesn't exist
+  let container = existingContainer;
+  if (!container) {
+    container = document.createElement('div');
+    container.className = 'ionblock-media-container';
+    videoElement.parentNode.insertBefore(container, videoElement);
+    container.appendChild(videoElement);
+  }
+  
   // Create button
   const button = document.createElement('div');
   button.id = 'ionblock-youtube-download-btn';
   button.className = 'ionblock-floating-button';
   button.innerHTML = `
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M12 16L7 11L8.4 9.55L11 12.15V4H13V12.15L15.6 9.55L17 11L12 16Z" fill="currentColor"/>
       <path d="M20 18H4V20H20V18Z" fill="currentColor"/>
     </svg>
     <span>Download Video</span>
+    ${data.bestFormat?.qualityLabel ? `<span style="opacity: 0.8; font-size: 12px;">(${data.bestFormat.qualityLabel})</span>` : ''}
   `;
   
   // Add click handler
   button.addEventListener('click', async () => {
     button.classList.add('downloading');
-    button.innerHTML = '<span>Downloading...</span>';
+    button.innerHTML = '<span>⏳ Downloading...</span>';
     
     try {
       if (youtubeDownloader) {
         await youtubeDownloader.downloadBest();
         
-        button.innerHTML = '<span>✓ Downloaded!</span>';
-        setTimeout(() => button.remove(), 3000);
+        button.classList.remove('downloading');
+        button.classList.add('success');
+        button.innerHTML = '<span>✅ Downloaded!</span>';
+        setTimeout(() => {
+          button.remove();
+        }, 3000);
       } else {
         throw new Error('YouTube downloader not initialized');
       }
     } catch (error) {
       console.error('[IonBlock] YouTube download error:', error);
-      button.innerHTML = '<span>✗ Error</span>';
+      button.classList.remove('downloading');
       button.classList.add('error');
-      setTimeout(() => button.remove(), 3000);
+      button.innerHTML = '<span>❌ Error</span>';
+      setTimeout(() => {
+        button.remove();
+      }, 3000);
     }
   });
   
   // Load CSS
   loadFloatingButtonCSS();
   
-  // Add to page
-  document.body.appendChild(button);
+  // Insert button at the top of container (before video element)
+  container.insertBefore(button, videoElement);
   
-  console.log('[IonBlock] YouTube download button shown');
+  console.log('[IonBlock] YouTube download button shown above video player');
 }
 
 /**
