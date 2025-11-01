@@ -9,6 +9,7 @@ const api = typeof browser !== 'undefined' ? browser : chrome;
 // Module instances
 let adBlocker = null;
 let mediaDownloader = null;
+let youtubeDownloader = null;
 let settings = null;
 
 /**
@@ -63,16 +64,41 @@ function initAdBlocker() {
  * Initialize media downloader
  */
 function initMediaDownloader() {
+  // Check if this is YouTube
+  const isYouTube = window.location.hostname.includes('youtube.com');
+  
   // Wait for DOM to be ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      mediaDownloader = new MediaDownloader();
+      if (isYouTube) {
+        initYouTubeDownloader();
+      } else {
+        mediaDownloader = new MediaDownloader();
+      }
       setupMediaDetectionUI();
     });
   } else {
-    mediaDownloader = new MediaDownloader();
+    if (isYouTube) {
+      initYouTubeDownloader();
+    } else {
+      mediaDownloader = new MediaDownloader();
+    }
     setupMediaDetectionUI();
   }
+}
+
+/**
+ * Initialize YouTube-specific downloader
+ */
+function initYouTubeDownloader() {
+  // Load YouTube downloader script
+  const script = document.createElement('script');
+  script.src = chrome.runtime.getURL('core/youtubeDownloader.js');
+  script.onload = () => {
+    youtubeDownloader = new YouTubeDownloader();
+    console.log('[IonBlock] YouTube downloader initialized');
+  };
+  (document.head || document.documentElement).appendChild(script);
 }
 
 /**
@@ -87,6 +113,25 @@ function setupMediaDetectionUI() {
     // Show floating download button for video/audio
     if (mediaInfo.type.includes('video') || mediaInfo.type.includes('audio')) {
       showFloatingButton(mediaInfo);
+    }
+  });
+  
+  // Listen for YouTube-specific events
+  document.addEventListener('ionblock-youtube-ready', (event) => {
+    const data = event.detail;
+    console.log('[IonBlock] YouTube video ready:', data);
+    
+    // Show YouTube download button
+    showYouTubeDownloadButton(data);
+  });
+  
+  // Listen for download status
+  document.addEventListener('ionblock-download-status', (event) => {
+    const { status, message } = event.detail;
+    console.log('[IonBlock] Download status:', status, message);
+    
+    if (status === 'error') {
+      showNotification('Download Error', message, 'error');
     }
   });
 }
@@ -166,6 +211,96 @@ function loadFloatingButtonCSS() {
   link.rel = 'stylesheet';
   link.href = api.runtime.getURL('ui/floatingButton.css');
   document.head.appendChild(link);
+}
+
+/**
+ * Show YouTube download button
+ */
+function showYouTubeDownloadButton(data) {
+  // Check if button already exists
+  if (document.getElementById('ionblock-youtube-download-btn')) {
+    return;
+  }
+  
+  if (!data.formatsCount || data.formatsCount === 0) {
+    console.warn('[IonBlock] No downloadable formats available');
+    return;
+  }
+  
+  // Create button
+  const button = document.createElement('div');
+  button.id = 'ionblock-youtube-download-btn';
+  button.className = 'ionblock-floating-button';
+  button.innerHTML = `
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 16L7 11L8.4 9.55L11 12.15V4H13V12.15L15.6 9.55L17 11L12 16Z" fill="currentColor"/>
+      <path d="M20 18H4V20H20V18Z" fill="currentColor"/>
+    </svg>
+    <span>Download Video</span>
+  `;
+  
+  // Add click handler
+  button.addEventListener('click', async () => {
+    button.classList.add('downloading');
+    button.innerHTML = '<span>Downloading...</span>';
+    
+    try {
+      if (youtubeDownloader) {
+        await youtubeDownloader.downloadBest();
+        
+        button.innerHTML = '<span>✓ Downloaded!</span>';
+        setTimeout(() => button.remove(), 3000);
+      } else {
+        throw new Error('YouTube downloader not initialized');
+      }
+    } catch (error) {
+      console.error('[IonBlock] YouTube download error:', error);
+      button.innerHTML = '<span>✗ Error</span>';
+      button.classList.add('error');
+      setTimeout(() => button.remove(), 3000);
+    }
+  });
+  
+  // Load CSS
+  loadFloatingButtonCSS();
+  
+  // Add to page
+  document.body.appendChild(button);
+  
+  console.log('[IonBlock] YouTube download button shown');
+}
+
+/**
+ * Show notification
+ */
+function showNotification(title, message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `ionblock-notification ionblock-notification-${type}`;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: ${type === 'error' ? '#ef4444' : '#10b981'};
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 999999;
+    max-width: 300px;
+    animation: slideIn 0.3s ease;
+  `;
+  notification.innerHTML = `
+    <strong style="display: block; margin-bottom: 4px;">${title}</strong>
+    <span style="font-size: 14px;">${message}</span>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateX(400px)';
+    setTimeout(() => notification.remove(), 300);
+  }, 5000);
 }
 
 /**
