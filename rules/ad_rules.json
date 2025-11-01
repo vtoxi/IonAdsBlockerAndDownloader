@@ -18,7 +18,7 @@
     },
     "condition": {
       "urlFilter": "||googlesyndication.com^",
-      "resourceTypes": ["script", "xmlhttprequest", "subdocument"]
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame"]
     }
   },
   {
@@ -85,7 +85,7 @@
     },
     "condition": {
       "urlFilter": "||youtube.com/pagead/",
-      "resourceTypes": ["script", "xmlhttprequest", "subdocument"]
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame"]
     }
   },
   {
@@ -107,7 +107,7 @@
     },
     "condition": {
       "urlFilter": "||google.com/pagead/",
-      "resourceTypes": ["script", "xmlhttprequest", "subdocument", "image"]
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame", "image"]
     }
   },
   {
@@ -151,7 +151,7 @@
     },
     "condition": {
       "urlFilter": "||pagead2.googlesyndication.com^",
-      "resourceTypes": ["script", "subdocument", "xmlhttprequest"]
+      "resourceTypes": ["script", "sub_frame", "xmlhttprequest"]
     }
   },
   {
@@ -162,7 +162,7 @@
     },
     "condition": {
       "urlFilter": "||adservice.google.com^",
-      "resourceTypes": ["script", "xmlhttprequest", "subdocument"]
+      "resourceTypes": ["script", "xmlhttprequest", "sub_frame"]
     }
   },
   {
@@ -208,7 +208,7 @@
     },
     "condition": {
       "urlFilter": "||advertising.com^",
-      "resourceTypes": ["script", "xmlhttprequest", "image", "subdocument"]
+      "resourceTypes": ["script", "xmlhttprequest", "image", "sub_frame"]
     }
   },
   {
