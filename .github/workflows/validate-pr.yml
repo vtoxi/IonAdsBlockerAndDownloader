@@ -1,0 +1,103 @@
+name: Validate Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  validate:
+    name: Validate Extension
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Check manifest.json syntax
+        run: |
+          echo "→ Validating manifest.json..."
+          node -e "require('./manifest.json')"
+          echo "✓ manifest.json is valid JSON"
+      
+      - name: Check ad_rules.json syntax
+        run: |
+          echo "→ Validating ad_rules.json..."
+          node -e "require('./rules/ad_rules.json')"
+          echo "✓ ad_rules.json is valid JSON"
+      
+      - name: Run validation script
+        run: |
+          echo "→ Running full validation..."
+          node scripts/validate.js
+      
+      - name: Check for console.log statements
+        run: |
+          echo "→ Checking for console.log statements..."
+          if grep -r "console\.log" *.js core/*.js utils/*.js --exclude-dir=node_modules 2>/dev/null | grep -v "console.error\|console.warn" > /dev/null; then
+            echo "⚠ Warning: console.log statements found"
+            grep -r "console\.log" *.js core/*.js utils/*.js --exclude-dir=node_modules 2>/dev/null | grep -v "console.error\|console.warn"
+          else
+            echo "✓ No console.log statements found"
+          fi
+      
+      - name: Test build (without publish)
+        run: |
+          echo "→ Testing build process..."
+          chmod +x scripts/build.sh
+          bash scripts/build.sh
+      
+      - name: Verify build artifacts
+        run: |
+          echo "→ Verifying build artifacts..."
+          ls -lh dist/
+          
+          if [ ! -f "dist/ionblock-chrome-"*.zip ]; then
+            echo "✗ Chrome build not found"
+            exit 1
+          fi
+          
+          if [ ! -f "dist/ionblock-firefox-"*.zip ]; then
+            echo "✗ Firefox build not found"
+            exit 1
+          fi
+          
+          if [ ! -f "dist/checksums.txt" ]; then
+            echo "✗ Checksums not found"
+            exit 1
+          fi
+          
+          echo "✓ All build artifacts present"
+      
+      - name: Comment on PR (success)
+        if: success() && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '✅ Validation passed! Extension builds successfully.'
+            })
+      
+      - name: Comment on PR (failure)
+        if: failure() && github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ Validation failed. Please check the workflow logs and fix the errors.'
+            })
+

@@ -1,0 +1,302 @@
+name: Build and Publish Extension
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      publish_chrome:
+        description: 'Publish to Chrome Web Store'
+        required: false
+        type: boolean
+        default: true
+      publish_firefox:
+        description: 'Publish to Firefox Add-ons'
+        required: false
+        type: boolean
+        default: true
+      publish_edge:
+        description: 'Publish to Edge Add-ons'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  build:
+    name: Build Extension Packages
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Validate manifest and files
+        run: |
+          echo "→ Validating extension files..."
+          node scripts/validate.js
+      
+      - name: Build packages
+        run: |
+          chmod +x scripts/build.sh
+          bash scripts/build.sh
+      
+      - name: Upload Chrome/Edge build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: chrome-build
+          path: dist/ionblock-chrome-*.zip
+          retention-days: 30
+      
+      - name: Upload Firefox build artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: firefox-build
+          path: dist/ionblock-firefox-*.zip
+          retention-days: 30
+      
+      - name: Upload Firefox source artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: firefox-source
+          path: dist/ionblock-source-*.zip
+          retention-days: 30
+      
+      - name: Upload build info
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-info
+          path: |
+            dist/checksums.txt
+            dist/BUILD_INFO.txt
+          retention-days: 30
+
+  publish-chrome:
+    name: Publish to Chrome Web Store
+    needs: build
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_chrome == 'true')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Download Chrome build
+        uses: actions/download-artifact@v3
+        with:
+          name: chrome-build
+          path: dist/
+      
+      - name: Publish to Chrome Web Store
+        env:
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          CHROME_APP_ID: ${{ secrets.CHROME_APP_ID }}
+        run: |
+          chmod +x scripts/publish-chrome.sh
+          bash scripts/publish-chrome.sh
+      
+      - name: Comment on commit (success)
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '✅ Published to Chrome Web Store successfully!'
+            })
+      
+      - name: Comment on commit (failure)
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '❌ Chrome Web Store publish failed. Check the workflow logs.'
+            })
+
+  publish-firefox:
+    name: Publish to Firefox Add-ons
+    needs: build
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_firefox == 'true')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install web-ext
+        run: npm install -g web-ext
+      
+      - name: Download Firefox build
+        uses: actions/download-artifact@v3
+        with:
+          name: firefox-build
+          path: dist/
+      
+      - name: Download Firefox source
+        uses: actions/download-artifact@v3
+        with:
+          name: firefox-source
+          path: dist/
+      
+      - name: Publish to Firefox Add-ons
+        env:
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+        run: |
+          chmod +x scripts/publish-firefox.sh
+          bash scripts/publish-firefox.sh
+      
+      - name: Comment on commit (success)
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '✅ Submitted to Firefox Add-ons (pending review)'
+            })
+      
+      - name: Comment on commit (failure)
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '❌ Firefox Add-ons submission failed. Check the workflow logs.'
+            })
+
+  publish-edge:
+    name: Publish to Edge Add-ons
+    needs: build
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.publish_edge == 'true')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Download Chrome build (Edge uses same)
+        uses: actions/download-artifact@v3
+        with:
+          name: chrome-build
+          path: dist/
+      
+      - name: Publish to Edge Add-ons
+        env:
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_CLIENT_SECRET: ${{ secrets.EDGE_CLIENT_SECRET }}
+          EDGE_ACCESS_TOKEN_URL: ${{ secrets.EDGE_ACCESS_TOKEN_URL }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+        run: |
+          chmod +x scripts/publish-edge.sh
+          bash scripts/publish-edge.sh
+      
+      - name: Comment on commit (success)
+        if: success()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '✅ Submitted to Edge Add-ons (pending review)'
+            })
+      
+      - name: Comment on commit (failure)
+        if: failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: '❌ Edge Add-ons submission failed. Check the workflow logs.'
+            })
+
+  create-release:
+    name: Create GitHub Release
+    needs: [build, publish-chrome, publish-firefox, publish-edge]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            artifacts/chrome-build/*.zip
+            artifacts/firefox-build/*.zip
+            artifacts/firefox-source/*.zip
+            artifacts/build-info/*.txt
+          body: |
+            ## IonBlock Extension Release ${{ github.ref_name }}
+            
+            ### Published to:
+            - ✅ Chrome Web Store
+            - ✅ Firefox Add-ons (pending review)
+            - ✅ Edge Add-ons (pending review)
+            
+            ### Downloads:
+            - Chrome/Edge: `ionblock-chrome-*.zip`
+            - Firefox: `ionblock-firefox-*.zip`
+            - Source Code: `ionblock-source-*.zip`
+            
+            ### Installation:
+            See [README.md](https://github.com/${{ github.repository }}/blob/main/README.md) for installation instructions.
+            
+            ### Checksums:
+            See `checksums.txt` in release assets.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
